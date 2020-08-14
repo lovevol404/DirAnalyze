@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strconv"
+	"strings"
 )
 
 const (
@@ -126,7 +127,7 @@ func getAndSetSize(info *DirInfo) int64 {
 }
 
 func print(info *DirInfo, prefix string, level, currentLevel int) {
-	fmt.Println(prefix + info.Name + " " + info.sizeH)
+	fmt.Println(prefix + info.Path + " " + info.sizeH)
 	prefix = "     " + prefix
 	currentLevel++
 	if currentLevel > level {
@@ -140,7 +141,16 @@ func print(info *DirInfo, prefix string, level, currentLevel int) {
 	}
 }
 
+func printString(s string, len int) {
+	totalS := ""
+	for i := 0; i < len; i++ {
+		totalS += s
+	}
+	fmt.Println(totalS)
+}
+
 func main() {
+	fmt.Println("输入要检测的根文件夹：")
 	reader := bufio.NewReader(os.Stdin)
 
 	bytes, _, err := reader.ReadLine()
@@ -175,19 +185,36 @@ func main() {
 		fmt.Println("找不到对应的文件夹：" + path)
 		return
 	}
+	printString("*", 30)
 	print(d, "", 3, 1)
+	printString("*", 30)
 	for {
 		fmt.Println("输入想要查看的文件夹：")
 		bytes, _, err := reader.ReadLine()
 		if err != nil {
 			panic(err)
 		}
-		path := string(bytes)
+		var path string
+		var level int64
+		level = 3
+		args := strings.Split(string(bytes), " ")
+		if len(args) == 1 {
+			path = args[0]
+		}
+		if len(args) >= 2 {
+			path = args[0]
+			level, err = strconv.ParseInt(args[1], 0, 64)
+			if err != nil {
+				fmt.Println(err)
+			}
+		}
 		dir := dirMap[path]
 		if dir == nil {
 			fmt.Println("找不到对应的文件夹：" + path)
 		} else {
-			print(dir, "", 3, 1)
+			printString("*", 30)
+			print(dir, "", int(level), 1)
+			printString("*", 30)
 		}
 	}
 
