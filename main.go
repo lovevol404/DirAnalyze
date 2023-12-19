@@ -149,7 +149,7 @@ func printString(s string, len int) {
 	fmt.Println(totalS)
 }
 
-func main() {
+func main2() {
 	fmt.Println("输入要检测的根文件夹：")
 	reader := bufio.NewReader(os.Stdin)
 
