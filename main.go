@@ -8,7 +8,6 @@ import (
 	"path/filepath"
 	"sort"
 	"strconv"
-	"strings"
 )
 
 const (
@@ -36,11 +35,7 @@ func (I DirInfoList) Swap(i, j int) {
 	I[i], I[j] = I[j], I[i]
 }
 
-var dirMap map[string]*DirInfo
-
-var numChan chan int
-
-func getDirInfo(path, name string) *DirInfo {
+func getDirInfo(path, name string, numChan chan int) *DirInfo {
 	fileInfo, err := os.Stat(path)
 	if err != nil {
 		return nil
@@ -61,7 +56,7 @@ func getDirInfo(path, name string) *DirInfo {
 			return nil
 		}
 		for _, f := range files {
-			subDir := getDirInfo(filepath.Join(path, f.Name()), f.Name())
+			subDir := getDirInfo(filepath.Join(path, f.Name()), f.Name(), numChan)
 			if subDir != nil {
 				subDirs = append(subDirs, subDir)
 			}
@@ -69,7 +64,6 @@ func getDirInfo(path, name string) *DirInfo {
 		dir.subDirs = subDirs
 		getAndSetSize(dir)
 		sort.Sort(sort.Reverse(subDirs))
-		dirMap[path] = dir
 		numChan <- 1
 		return dir
 	} else {
@@ -160,8 +154,7 @@ func main2() {
 
 	path := string(bytes)
 
-	dirMap = make(map[string]*DirInfo)
-	numChan = make(chan int, 100)
+	numChan := make(chan int, 100)
 	stopGetChan := make(chan int)
 
 	go func() {
@@ -177,7 +170,7 @@ func main2() {
 		}
 		stopGetChan <- 1
 	}()
-	d := getDirInfo(path, path)
+	d := getDirInfo(path, path, numChan)
 	close(numChan)
 
 	<-stopGetChan
@@ -188,34 +181,5 @@ func main2() {
 	printString("*", 30)
 	print(d, "", 3, 1)
 	printString("*", 30)
-	for {
-		fmt.Println("输入想要查看的文件夹：")
-		bytes, _, err := reader.ReadLine()
-		if err != nil {
-			panic(err)
-		}
-		var path string
-		var level int64
-		level = 3
-		args := strings.Split(string(bytes), " ")
-		if len(args) == 1 {
-			path = args[0]
-		}
-		if len(args) >= 2 {
-			path = args[0]
-			level, err = strconv.ParseInt(args[1], 0, 64)
-			if err != nil {
-				fmt.Println(err)
-			}
-		}
-		dir := dirMap[path]
-		if dir == nil {
-			fmt.Println("找不到对应的文件夹：" + path)
-		} else {
-			printString("*", 30)
-			print(dir, "", int(level), 1)
-			printString("*", 30)
-		}
-	}
 
 }

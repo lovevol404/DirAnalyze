@@ -1,3 +1,15 @@
+
+# 打包
+[链接](https://developer.fyne.io/started/packaging)
+在Macos下构建Macos平台：
+```
+fyne package -os darwin -icon Icon.jpg
+```
+跨平台构建，在 Macos下构建Windows:
+```
+fyne-cross windows --pull -app-id levovel.dir -icon Icon.jpg -env GOPROXY=https://goproxy.cn,direct
+```
+
 # 统计文件夹的大小
 可以列出每个文件夹的大小，按照文件夹大小提供文件夹与子文件夹的树形结构，例如
 ```
